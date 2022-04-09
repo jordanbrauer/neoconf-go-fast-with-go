@@ -7,6 +7,7 @@ import (
 	"net"
 )
 
+// Server represents a set of communication channels for the chat room
 type Server struct {
 	connections map[Connection]ID
 	joined      chan Connection
@@ -14,6 +15,7 @@ type Server struct {
 	outbox      chan string
 }
 
+// Listen on the given host and port and begin accepting connections
 func (chat *Server) Listen(host string, port int) {
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", host, port))
 
@@ -44,20 +46,18 @@ func (chat *Server) Listen(host string, port int) {
 	}
 }
 
+// Listening returns the number of currently connected clients
 func (server *Server) Listening() int {
 	return len(server.connections)
 }
 
+// Broadcast a message to all connected clients
 func (server *Server) Broadcast(message string) {
 	send := func(stream Connection, message string) {
 		_, err := stream.Write([]byte(message))
 
 		catch(err)
-		log.Printf(
-			"%s %s\n",
-			blue(stream.ID),
-			gray("received a message"),
-		)
+		log.Println(blue(stream.ID), gray("received a message"))
 	}
 
 	for recipient := range server.connections {
@@ -65,17 +65,19 @@ func (server *Server) Broadcast(message string) {
 	}
 }
 
+// Leave the chat room as the given connection
 func (server *Server) Leave(stream Connection) {
-	log.Printf("%s %s\n", red(stream.ID), gray("has disconnected"))
-	stream.Close()
+	catch(stream.Close())
 	delete(server.connections, stream)
+	log.Println(red(stream.ID), gray("has disconnected"))
 	log.Printf(gray("Now serving %d client(s)\n"), server.Listening())
 }
 
+// Join the chat room as the given connection
 func (server *Server) Join(stream Connection) {
 	server.connections[stream] = stream.ID
 
-	log.Printf("%s %s\n", green(stream.ID), gray("has joined"))
+	log.Println(green(stream.ID), gray("has joined"))
 	log.Printf(gray("Now serving %d client(s)\n"), server.Listening())
 
 	go func(stream Connection) {

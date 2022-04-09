@@ -21,4 +21,7 @@ mod: ## Install modules
 	@go mod tidy
 
 slides:
-	@lookatme --live --style stata-dark --exts file_loader SLIDES.md
+	@lookatme --live --style stata-dark SLIDES.md
+
+present:
+	@lookatme --style stata-dark SLIDES.md

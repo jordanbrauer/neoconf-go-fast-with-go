@@ -9,6 +9,7 @@ import (
 
 type ID = string
 
+// New up a chat server
 func New() *Server {
 	return &Server{
 		joined:      make(chan Connection),
